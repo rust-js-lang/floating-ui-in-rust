@@ -1,0 +1,206 @@
+import {
+  type Coords,
+  clamp,
+  evaluate,
+  getOppositeAxis,
+  getSide,
+  getSideAxis,
+} from '@floating-ui/utils';
+
+import {originSides} from '../constants';
+import type {DetectOverflowOptions} from '../detectOverflow';
+import type {Derivable, Middleware, MiddlewareState} from '../types';
+
+export interface ShiftOptions extends DetectOverflowOptions {
+  /**
+   * The axis that runs along the alignment of the floating element. Determines
+   * whether overflow along this axis is checked to perform shifting.
+   * @default true
+   */
+  mainAxis?: boolean | undefined;
+  /**
+   * The axis that runs along the side of the floating element. Determines
+   * whether overflow along this axis is checked to perform shifting.
+   * @default false
+   */
+  crossAxis?: boolean | undefined;
+  /**
+   * Accepts a function that limits the shifting done in order to prevent
+   * detachment.
+   */
+  limiter?:
+    | {
+        fn: (state: MiddlewareState) => Coords;
+        options?: any;
+      }
+    | undefined;
+}
+
+/**
+ * Optimizes the visibility of the floating element by shifting it in order to
+ * keep it in view when it will overflow the clipping boundary.
+ * @see https://floating-ui.com/docs/shift
+ */
+export const shift = (
+  options: ShiftOptions | Derivable<ShiftOptions> = {},
+): Middleware => ({
+  name: 'shift',
+  options,
+  async fn(state) {
+    const {x, y, placement, platform} = state;
+
+    const {
+      mainAxis: checkMainAxis = true,
+      crossAxis: checkCrossAxis = false,
+      limiter = {fn: ({x, y}: Coords) => ({x, y})},
+      ...detectOverflowOptions
+    } = evaluate(options, state);
+
+    const overflow = await platform.detectOverflow(
+      state,
+      detectOverflowOptions,
+    );
+    const crossAxis = getSideAxis(placement);
+    const mainAxis = getOppositeAxis(crossAxis);
+
+    let mainAxisCoord = state[mainAxis];
+    let crossAxisCoord = state[crossAxis];
+
+    const clampCoord = (axis: 'x' | 'y', coord: number) =>
+      clamp(
+        coord + overflow[axis === 'y' ? 'top' : 'left'],
+        coord,
+        coord - overflow[axis === 'y' ? 'bottom' : 'right'],
+      );
+
+    if (checkMainAxis) {
+      mainAxisCoord = clampCoord(mainAxis, mainAxisCoord);
+    }
+
+    if (checkCrossAxis) {
+      crossAxisCoord = clampCoord(crossAxis, crossAxisCoord);
+    }
+
+    const limitedCoords = limiter.fn({
+      ...state,
+      [mainAxis]: mainAxisCoord,
+      [crossAxis]: crossAxisCoord,
+    });
+
+    return {
+      ...limitedCoords,
+      data: {
+        x: limitedCoords.x - x,
+        y: limitedCoords.y - y,
+        enabled: {
+          [mainAxis]: checkMainAxis,
+          [crossAxis]: checkCrossAxis,
+        },
+      },
+    };
+  },
+});
+
+type LimitShiftOffset =
+  | number
+  | {
+      /**
+       * Offset the limiting of the axis that runs along the alignment of the
+       * floating element.
+       */
+      mainAxis?: number | undefined;
+      /**
+       * Offset the limiting of the axis that runs along the side of the
+       * floating element.
+       */
+      crossAxis?: number | undefined;
+    };
+
+export interface LimitShiftOptions {
+  /**
+   * Offset when limiting starts. `0` will limit when the opposite edges of the
+   * reference and floating elements are aligned.
+   * - positive = start limiting earlier
+   * - negative = start limiting later
+   */
+  offset?: LimitShiftOffset | Derivable<LimitShiftOffset> | undefined;
+  /**
+   * Whether to limit the axis that runs along the alignment of the floating
+   * element.
+   */
+  mainAxis?: boolean | undefined;
+  /**
+   * Whether to limit the axis that runs along the side of the floating element.
+   */
+  crossAxis?: boolean | undefined;
+}
+
+/**
+ * Built-in `limiter` that will stop `shift()` at a certain point.
+ */
+export const limitShift = (
+  options: LimitShiftOptions | Derivable<LimitShiftOptions> = {},
+): {
+  options: any;
+  fn: (state: MiddlewareState) => Coords;
+} => ({
+  options,
+  fn(state) {
+    const {placement, rects, middlewareData} = state;
+
+    const {
+      offset = 0,
+      mainAxis: checkMainAxis = true,
+      crossAxis: checkCrossAxis = true,
+    } = evaluate(options, state);
+
+    const crossAxis = getSideAxis(placement);
+    const mainAxis = getOppositeAxis(crossAxis);
+
+    let mainAxisCoord = state[mainAxis];
+    let crossAxisCoord = state[crossAxis];
+
+    const rawOffset = evaluate(offset, state);
+    const {mainAxis: mainAxisOffset = 0, crossAxis: crossAxisOffset = 0} =
+      typeof rawOffset === 'number' ? {mainAxis: rawOffset} : rawOffset;
+
+    if (checkMainAxis) {
+      const len = mainAxis === 'y' ? 'height' : 'width';
+      const limitMin =
+        rects.reference[mainAxis] - rects.floating[len] + mainAxisOffset;
+      const limitMax =
+        rects.reference[mainAxis] + rects.reference[len] - mainAxisOffset;
+
+      if (mainAxisCoord < limitMin) {
+        mainAxisCoord = limitMin;
+      } else if (mainAxisCoord > limitMax) {
+        mainAxisCoord = limitMax;
+      }
+    }
+
+    if (checkCrossAxis) {
+      const len = mainAxis === 'y' ? 'width' : 'height';
+      const isOriginSide = originSides.has(getSide(placement));
+      const offsetData = middlewareData.offset?.[crossAxis] || 0;
+      const limitMin =
+        rects.reference[crossAxis] -
+        rects.floating[len] +
+        (isOriginSide ? offsetData : crossAxisOffset);
+      const limitMax =
+        rects.reference[crossAxis] +
+        rects.reference[len] +
+        (isOriginSide ? -crossAxisOffset : offsetData);
+
+      if (crossAxisCoord < limitMin) {
+        crossAxisCoord = limitMin;
+      } else if (crossAxisCoord > limitMax) {
+        crossAxisCoord = limitMax;
+      }
+    }
+
+    return {
+      [mainAxis]: mainAxisCoord,
+      [crossAxis]: crossAxisCoord,
+    } as Coords;
+  },
+});

@@ -1,0 +1,276 @@
+import type {
+  UseFloatingOptions as UsePositionOptions,
+  UseFloatingReturn as UsePositionFloatingReturn,
+  VirtualElement,
+} from '@floating-ui/react-dom';
+import type * as React from 'react';
+
+import type {ExtendedUserProps} from './hooks/useInteractions';
+
+// Method syntax keeps callback parameters bivariant, but expressing the
+// explicit `| undefined` required by `exactOptionalPropertyTypes` needs
+// property syntax, which is contravariant under `strictFunctionTypes`.
+// Extracting the function from a method position restores that bivariance so
+// consumers can still assign callbacks with narrower parameter types.
+type BivariantCallback<T extends (...args: any[]) => any> = {
+  bivariance(...args: Parameters<T>): ReturnType<T>;
+}['bivariance'];
+
+export * from '.';
+export type {FloatingArrowProps} from './components/FloatingArrow';
+export type {FloatingDelayGroupProps} from './components/FloatingDelayGroup';
+export type {NextFloatingDelayGroupProps} from './components/NextFloatingDelayGroup';
+export type {FloatingFocusManagerProps} from './components/FloatingFocusManager';
+export type {FloatingOverlayProps} from './components/FloatingOverlay';
+export type {
+  FloatingPortalProps,
+  UseFloatingPortalNodeProps,
+} from './components/FloatingPortal';
+export type {CompositeProps, CompositeItemProps} from './components/Composite';
+export type {UseClickProps} from './hooks/useClick';
+export type {UseClientPointProps} from './hooks/useClientPoint';
+export type {UseDismissProps} from './hooks/useDismiss';
+export type {UseFocusProps} from './hooks/useFocus';
+export type {
+  UseHoverProps,
+  HandleCloseContext,
+  HandleClose,
+} from './hooks/useHover';
+export type {UseListNavigationProps} from './hooks/useListNavigation';
+export type {UseRoleProps} from './hooks/useRole';
+export type {
+  UseTransitionStatusProps,
+  UseTransitionStylesProps,
+} from './hooks/useTransition';
+export type {UseTypeaheadProps} from './hooks/useTypeahead';
+export type {UseFloatingRootContextOptions} from './hooks/useFloatingRootContext';
+export type {InnerProps, UseInnerOffsetProps} from './_deprecated-inner';
+export type {UseInteractionsReturn} from './hooks/useInteractions';
+export type {SafePolygonOptions} from './safePolygon';
+export type {
+  FloatingTreeProps,
+  FloatingNodeProps,
+} from './components/FloatingTree';
+export type {
+  AlignedPlacement,
+  Alignment,
+  ArrowOptions,
+  AutoPlacementOptions,
+  AutoUpdateOptions,
+  Axis,
+  Boundary,
+  ClientRectObject,
+  ComputePositionConfig,
+  ComputePositionReturn,
+  Coords,
+  DetectOverflowOptions,
+  Dimensions,
+  ElementContext,
+  ElementRects,
+  Elements,
+  FlipOptions,
+  FloatingElement,
+  HideOptions,
+  InlineOptions,
+  Length,
+  Middleware,
+  MiddlewareArguments,
+  MiddlewareData,
+  MiddlewareReturn,
+  MiddlewareState,
+  NodeScroll,
+  OffsetOptions,
+  Padding,
+  Placement,
+  Platform,
+  Rect,
+  ReferenceElement,
+  RootBoundary,
+  ShiftOptions,
+  Side,
+  SideObject,
+  SizeOptions,
+  Strategy,
+  VirtualElement,
+} from '@floating-ui/react-dom';
+export {
+  arrow,
+  autoPlacement,
+  autoUpdate,
+  computePosition,
+  detectOverflow,
+  flip,
+  getOverflowAncestors,
+  hide,
+  inline,
+  limitShift,
+  offset,
+  platform,
+  shift,
+  size,
+} from '@floating-ui/react-dom';
+
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+export type OpenChangeReason =
+  | 'outside-press'
+  | 'escape-key'
+  | 'ancestor-scroll'
+  | 'reference-press'
+  | 'click'
+  | 'hover'
+  | 'focus'
+  | 'focus-out'
+  | 'list-navigation'
+  | 'safe-polygon';
+
+export type Delay =
+  | number
+  | Partial<{open: number | undefined; close: number | undefined}>;
+
+export type NarrowedElement<T> = T extends Element ? T : Element;
+
+export interface ExtendedRefs<RT> {
+  reference: React.MutableRefObject<ReferenceType | null>;
+  floating: React.MutableRefObject<HTMLElement | null>;
+  domReference: React.MutableRefObject<NarrowedElement<RT> | null>;
+  // Property syntax (rather than method syntax) signals that these setters are
+  // safe to pass around unbound, e.g. `ref={refs.setFloating}`, so
+  // `@typescript-eslint/unbound-method` doesn't flag them.
+  // `BivariantCallback` keeps the parameter bivariance method syntax had.
+  setReference: BivariantCallback<(node: RT | null) => void>;
+  setFloating: BivariantCallback<(node: HTMLElement | null) => void>;
+  setPositionReference: BivariantCallback<(node: ReferenceType | null) => void>;
+}
+
+export interface ExtendedElements<RT> {
+  reference: ReferenceType | null;
+  floating: HTMLElement | null;
+  domReference: NarrowedElement<RT> | null;
+}
+
+export interface FloatingEvents {
+  emit<T extends string>(event: T, data?: any): void;
+  on(event: string, handler: (data: any) => void): void;
+  off(event: string, handler: (data: any) => void): void;
+}
+
+export interface ContextData {
+  openEvent?: Event | undefined;
+  floatingContext?: FloatingContext | undefined;
+  /** @deprecated use `onTypingChange` prop in `useTypeahead` */
+  typing?: boolean | undefined;
+  [key: string]: any;
+}
+
+export interface FloatingRootContext<RT extends ReferenceType = ReferenceType> {
+  dataRef: React.MutableRefObject<ContextData>;
+  open: boolean;
+  onOpenChange: (
+    open: boolean,
+    event?: Event,
+    reason?: OpenChangeReason,
+  ) => void;
+  elements: {
+    domReference: Element | null;
+    reference: RT | null;
+    floating: HTMLElement | null;
+  };
+  events: FloatingEvents;
+  floatingId: string | undefined;
+  refs: {
+    setPositionReference: BivariantCallback<
+      (node: ReferenceType | null) => void
+    >;
+  };
+}
+
+export type FloatingContext<RT extends ReferenceType = ReferenceType> = Omit<
+  UsePositionFloatingReturn<RT>,
+  'refs' | 'elements'
+> & {
+  open: boolean;
+  onOpenChange(open: boolean, event?: Event, reason?: OpenChangeReason): void;
+  events: FloatingEvents;
+  dataRef: React.MutableRefObject<ContextData>;
+  nodeId: string | undefined;
+  floatingId: string | undefined;
+  refs: ExtendedRefs<RT>;
+  elements: ExtendedElements<RT>;
+};
+
+export interface FloatingNodeType<RT extends ReferenceType = ReferenceType> {
+  id: string | undefined;
+  parentId: string | null;
+  context?: FloatingContext<RT> | undefined;
+}
+
+export interface FloatingTreeType<RT extends ReferenceType = ReferenceType> {
+  nodesRef: React.MutableRefObject<Array<FloatingNodeType<RT>>>;
+  events: FloatingEvents;
+  addNode(node: FloatingNodeType): void;
+  removeNode(node: FloatingNodeType): void;
+}
+
+export interface ElementProps {
+  reference?: React.HTMLProps<Element> | undefined;
+  floating?: React.HTMLProps<HTMLElement> | undefined;
+  item?:
+    | React.HTMLProps<HTMLElement>
+    | ((props: ExtendedUserProps) => React.HTMLProps<HTMLElement>)
+    | undefined;
+}
+
+export type ReferenceType = Element | VirtualElement;
+
+export type UseFloatingData = Prettify<UseFloatingReturn>;
+
+export type UseFloatingReturn<RT extends ReferenceType = ReferenceType> =
+  Prettify<
+    UsePositionFloatingReturn & {
+      /**
+       * `FloatingContext`
+       */
+      context: Prettify<FloatingContext<RT>>;
+      /**
+       * Object containing the reference and floating refs and reactive setters.
+       */
+      refs: ExtendedRefs<RT>;
+      elements: ExtendedElements<RT>;
+    }
+  >;
+
+export interface UseFloatingOptions<RT extends ReferenceType = ReferenceType>
+  extends Omit<UsePositionOptions<RT>, 'elements'> {
+  rootContext?: FloatingRootContext<RT> | undefined;
+  /**
+   * Object of external elements as an alternative to the `refs` object setters.
+   */
+  elements?:
+    | {
+        /**
+         * Externally passed reference element. Store in state.
+         */
+        reference?: Element | null | undefined;
+        /**
+         * Externally passed floating element. Store in state.
+         */
+        floating?: HTMLElement | null | undefined;
+      }
+    | undefined;
+  /**
+   * An event callback that is invoked when the floating element is opened or
+   * closed.
+   */
+  onOpenChange?:
+    | BivariantCallback<
+        (open: boolean, event?: Event, reason?: OpenChangeReason) => void
+      >
+    | undefined;
+  /**
+   * Unique node id when using `FloatingTree`.
+   */
+  nodeId?: string | undefined;
+}

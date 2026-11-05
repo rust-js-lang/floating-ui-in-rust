@@ -1,0 +1,80 @@
+import type {ClientRectObject} from '@floating-ui/core';
+import {rectToClientRect} from '@floating-ui/core';
+import {createCoords} from '@floating-ui/utils';
+import {
+  getComputedStyle,
+  getFrameElement,
+  getWindow,
+} from '@floating-ui/utils/dom';
+
+import {getScale} from '../platform/getScale';
+import {isElement} from '../platform/isElement';
+import {getVisualOffsets, shouldAddVisualOffsets} from './getVisualOffsets';
+import {unwrapElement} from './unwrapElement';
+import type {VirtualElement} from '../types';
+
+export function getBoundingClientRect(
+  element: Element | VirtualElement,
+  includeScale = false,
+  isFixedStrategy = false,
+  offsetParent?: Element | Window,
+): ClientRectObject {
+  const clientRect = element.getBoundingClientRect();
+  const domElement = unwrapElement(element);
+
+  // A Window `offsetParent` has no scale. It must not reach `getScale`, which
+  // would read its `contextElement`: an element with that `id` is exposed as a
+  // named property on the Window.
+  const scale =
+    includeScale && (!offsetParent || isElement(offsetParent))
+      ? getScale(offsetParent || element)
+      : createCoords(1);
+
+  const visualOffsets = shouldAddVisualOffsets(
+    domElement,
+    isFixedStrategy,
+    offsetParent,
+  )
+    ? getVisualOffsets(domElement)
+    : createCoords(0);
+
+  let x = (clientRect.left + visualOffsets.x) / scale.x;
+  let y = (clientRect.top + visualOffsets.y) / scale.y;
+  let width = clientRect.width / scale.x;
+  let height = clientRect.height / scale.y;
+
+  if (domElement && offsetParent) {
+    const win = getWindow(domElement);
+    const offsetWin = isElement(offsetParent)
+      ? getWindow(offsetParent)
+      : offsetParent;
+
+    let currentWin = win;
+    let currentIFrame = getFrameElement(currentWin);
+    while (currentIFrame && offsetWin !== currentWin) {
+      const iframeScale = getScale(currentIFrame);
+      const iframeRect = currentIFrame.getBoundingClientRect();
+      const css = getComputedStyle(currentIFrame);
+      const left =
+        iframeRect.left +
+        (currentIFrame.clientLeft + parseFloat(css.paddingLeft)) *
+          iframeScale.x;
+      const top =
+        iframeRect.top +
+        (currentIFrame.clientTop + parseFloat(css.paddingTop)) * iframeScale.y;
+
+      x *= iframeScale.x;
+      y *= iframeScale.y;
+      width *= iframeScale.x;
+      height *= iframeScale.y;
+
+      x += left;
+      y += top;
+
+      currentWin = getWindow(currentIFrame);
+      currentIFrame = getFrameElement(currentWin);
+    }
+  }
+
+  return rectToClientRect({width, height, x, y});
+}
