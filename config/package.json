@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
-    "postinstall": "pnpm run build"
+    "postinstall": "bun run build"
   },
   "files": [
     "dist",

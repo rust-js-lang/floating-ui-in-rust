@@ -10,7 +10,7 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'pnpm run dev',
+    command: 'bun run dev',
     port: 1234,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,

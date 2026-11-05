@@ -60,7 +60,7 @@ Missing files:
   ${chalk.greenBright(missingFiles.join('\n  '))}
 
 ${chalk.redBright('Did you forget to build?')} (${chalk.cyan.bgGray(
-      'pnpm run prepack',
+      'bun run prepack',
     )} from the root directory)
 `);
     process.exit(1);

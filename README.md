@@ -112,18 +112,18 @@ npm install @floating-ui/core
 
 ## Contributing
 
-This project is a monorepo written in TypeScript using [pnpm](https://pnpm.io/)
+This project is a monorepo written in TypeScript using [Bun](https://bun.sh/)
 workspaces. The website is using Next.js SSG and Tailwind CSS for styling.
 
 - Fork and clone the repo
-- Install dependencies in root directory with `pnpm install`
-- Build initial package dist files with `pnpm run build`
+- Install dependencies in root directory with `bun install`
+- Build initial package dist files with `bun run build`
 
 ### Testing grounds
 
 #### DOM
 
-`pnpm run --filter @floating-ui/dom dev` in the root will launch the
+`bun run --filter @floating-ui/dom dev` in the root will launch the
 `@floating-ui/dom` development visual tests at `http://localhost:1234`. The
 playground uses React to write each test route, bundled by Vite.
 
@@ -137,7 +137,7 @@ as much as possible.
 
 #### React
 
-`pnpm run --filter @floating-ui/react dev` in the root will launch the
+`bun run --filter @floating-ui/react dev` in the root will launch the
 `@floating-ui/react` development tests at `http://localhost:1234`.
 
 ## Credits

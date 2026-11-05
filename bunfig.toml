@@ -1,0 +1,5 @@
+# One node_modules at the root, as npm lays it out: upstream's packages use
+# tools a sibling declares (`@babel/preset-react` in each package's build),
+# which pnpm's hoisting found and an isolated install doesn't.
+[install]
+linker = "hoisted"

@@ -60,4 +60,4 @@ export const Default = () => {
 
 ## Contribution
 
-- run `pnpm --filter @floating-ui/devtools run build` from root folder
+- run `bun run --filter @floating-ui/devtools build` from root folder

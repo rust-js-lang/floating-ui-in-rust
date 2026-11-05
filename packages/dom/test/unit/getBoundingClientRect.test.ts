@@ -1,7 +1,7 @@
 import {computePosition} from '../../src';
 
 // Transforms need real layout, so this only runs in the browser test
-// environment (`pnpm test:browser`). Under jsdom it is skipped.
+// environment (`bun run test:browser`). Under jsdom it is skipped.
 const inBrowser = typeof IntersectionObserver === 'function';
 
 test.runIf(inBrowser)(
