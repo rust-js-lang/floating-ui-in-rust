@@ -1,9 +1,0 @@
-name: Typescript
-description: Performs typescript checks
-runs:
-  using: composite
-  steps:
-    - run: pnpm run lint
-      shell: sh
-    - run: pnpm run typecheck
-      shell: sh
