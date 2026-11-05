@@ -4,6 +4,10 @@
   "workspaces": {
     "": {
       "name": "@floating-ui/monorepo",
+      "dependencies": {
+        "@rust-js/runtime": "link:../rust-js/runtime",
+        "@rust-js/std": "link:../rust-js/std",
+      },
       "devDependencies": {
         "@babel/preset-env": "^7.23.7",
         "@babel/preset-typescript": "^7.23.3",
@@ -1104,6 +1108,10 @@
     "@rushstack/terminal": ["@rushstack/terminal@0.10.1", "", { "dependencies": { "@rushstack/node-core-library": "4.1.0", "supports-color": "8.1.1" }, "peerDependencies": { "@types/node": "*" }, "optionalPeers": ["@types/node"] }, "sha512-C6Vi/m/84IYJTkfzmXr1+W8Wi3MmBjVF/q3za91Gb3VYjKbpALHVxY6FgH625AnDe5Z0Kh4MHKWA3Z7bqgAezA=="],
 
     "@rushstack/ts-command-line": ["@rushstack/ts-command-line@4.19.2", "", { "dependencies": { "@rushstack/terminal": "0.10.1", "@types/argparse": "1.0.38", "argparse": "1.0.10", "string-argv": "0.3.2" } }, "sha512-cqmXXmBEBlzo9WtyUrHtF9e6kl0LvBY7aTSVX4jfnBfXWZQWnPq9JTFPlQZ+L/ZwjZ4HrNwQsOVvhe9oOucZkw=="],
+
+    "@rust-js/runtime": ["@rust-js/runtime@link:../rust-js/runtime", {}],
+
+    "@rust-js/std": ["@rust-js/std@link:../rust-js/std", {}],
 
     "@sideway/address": ["@sideway/address@4.1.4", "", { "dependencies": { "@hapi/hoek": "9.3.0" } }, "sha512-7vwq+rOHVWjyXxVlR76Agnvhy8I9rpzjosTESvmhNeXOXdZZB15Fl+TI9x1SiHZH5Jv2wTGduSxFDIaq0m3DUw=="],
 

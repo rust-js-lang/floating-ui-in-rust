@@ -1,0 +1,19 @@
+# @floating-ui/dom: its modules are its files, `src/`'s, each declared in
+# `dom.rs` as it's ported.
+[package]
+name = "floating-ui-dom"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+path = "dom.rs"
+
+[dependencies]
+floating-ui-core.workspace = true
+floating-ui-utils.workspace = true
+js.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true

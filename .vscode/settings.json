@@ -1,0 +1,5 @@
+{
+  // rust-analyzer checks the port through rust-js, which reads it as a
+  // build does, as a plain rustc doesn't (rust-js's ADR 0222).
+  "rust-analyzer.check.overrideCommand": ["node", "../rust-js/tooling/check.js"]
+}

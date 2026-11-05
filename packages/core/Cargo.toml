@@ -1,0 +1,17 @@
+# @floating-ui/core: its modules are its files, `src/`'s, each declared in
+# `core.rs` as it's ported.
+[package]
+name = "floating-ui-core"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+path = "core.rs"
+
+[dependencies]
+floating-ui-utils.workspace = true
+js.workspace = true
+
+[lints]
+workspace = true

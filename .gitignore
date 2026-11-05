@@ -6,7 +6,8 @@ node_modules
 .jekyll-metadata
 dist
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 coverage.info
 coverage
 __diff_output__
@@ -16,3 +17,8 @@ stats
 test-results
 out
 out-tsc
+# Cargo's, and the patch `rust-js build` writes of where crates are.
+/target
+/.cargo
+# The JS rust-js writes beside the Rust is committed; its maps aren't.
+*.js.map

@@ -19,6 +19,7 @@
     "format": "bun run --filter '*' format",
     "playwright": "bun run build && bun run --filter '*' playwright",
     "playwright:update": "bun run build && bun run --filter '*' playwright -u",
+    "rust": "node ../rust-js/tooling/cli.js build",
     "build": "bun run --filter '*' build",
     "build:api": "bun run --filter '*' build:api",
     "clean": "bun run --filter '*' clean",
@@ -42,6 +43,10 @@
     "singleQuote": true,
     "useTabs": false,
     "semi": true
+  },
+  "dependencies": {
+    "@rust-js/runtime": "link:../rust-js/runtime",
+    "@rust-js/std": "link:../rust-js/std"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.7",
